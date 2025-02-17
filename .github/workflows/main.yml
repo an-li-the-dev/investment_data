@@ -13,8 +13,8 @@ jobs:
         id: 'dolt_import'
         with:
           remote: chenditc/investment_data
-          dolthub_credential: ${{ secrets.DOLTHUB_CREDENTIAL }}
-          message: 'Dolt action commit'
+          # dolthub_credential: ${{ secrets.DOLTHUB_CREDENTIAL }}
+          # message: 'Dolt action commit'
           commit_branch: 'master'
           commit_user_email: kidylee@gmail.com
           commit_author: 'An Li'
