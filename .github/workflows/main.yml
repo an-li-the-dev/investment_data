@@ -9,7 +9,7 @@ jobs:
     name: A job to say hello
     steps:
       - name: Dolt Import
-        uses: dolthub/dolt-action@0.16
+        uses: dolthub/dolt-action@v0.16
         id: 'dolt_import'
         with:
           remote: chenditc/investment_data
