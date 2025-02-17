@@ -13,6 +13,7 @@ jobs:
         id: 'dolt_import'
         with:
           remote: chenditc/investment_data
+          clear: false
           # dolthub_credential: ${{ secrets.DOLTHUB_CREDENTIAL }}
           # message: 'Dolt action commit'
           commit_branch: 'master'
