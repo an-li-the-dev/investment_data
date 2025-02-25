@@ -1,0 +1,96 @@
+name: Daily Update
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  update-index-weight-on-dolthub:
+    needs: download-index-weight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dolt
+        run: sudo bash -c 'curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | sudo bash'
+      - name: Setup Dolt
+        run: dolt config --global --add user.email "kidylee@gmail.com" && dolt config --global --add user.name "An Li"
+
+      - name: Cache Dolt Folder
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .dolt
+          key: dolt-storage
+          restore-keys: dolt-storage
+      - name: Clone the repository
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: dolt clone kidylee/test .
+      - name: Pull the repository
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: dolt pull
+
+      - name: Download Index Weight
+        uses: actions/download-artifact@v4
+        with:
+          name: index_weight
+          path: index_weight
+      - run: |
+          file_list=($(ls index_weight/*))
+                      for file in "${file_list[@]}"; do
+                         cat "$file"
+                      done
+      - name: Clean dolt folder before cache
+        run: dolt gc
+
+  download-index-weight:
+    runs-on: ubuntu-latest
+    name: Download Index Weight
+    env:
+      TUSHARE: ${{ secrets.TUSHARE }}
+      DOLTHUB_TOKEN: ${{ secrets.DOLTHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync
+      - name: Dump Index Weight From Tushare
+
+        run: uv run python dolthub/next_dump_index_weight.py "./index_weight"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: index_weight
+          path: index_weight
+#  update-index-weight-on-dolthub:
+#    needs: download-index-weight
+#    runs-on: ubuntu-latest
+#    name: Update Index Weight On Dolthub
+#    env:
+#      TUSHARE: ${{ secrets.TUSHARE }}
+#      DOLTHUB_TOKEN: ${{ secrets.DOLTHUB_TOKEN }}
+#    steps:
+#      - name: Download Index Weight
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: index_weight
+#          path: index_weight
+#      - name: Dolt Import
+#        uses: dolthub/dolt-action@v0.16
+#        id: 'dolt_import'
+#        with:
+#          remote: kidylee/investment_data
+#          clear: false
+#          dolthub_credential: ${{ secrets.DOLTHUB_CREDENTIAL }}
+#          branch: 'test'
+#          commit_message: 'Update Index Weight'
+#          commit_user_email: kidylee@gmail.com
+#          commit_author: 'An Li'
+#          push: true
+#          before: |
+#            file_list=($(ls index_weight/*))
+#            for file in "${file_list[@]}"; do
+#              dolt table import -u ts_index_weight "$file"
+#            done

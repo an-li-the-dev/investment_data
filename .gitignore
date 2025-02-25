@@ -3,3 +3,5 @@
 .sqlhistory
 *.log
 *.out
+.env
+.idea

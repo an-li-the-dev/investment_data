@@ -2,8 +2,8 @@ name: Upload latest data to github release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron:  '0 9 * * *'
+#  schedule:
+#    - cron:  '0 9 * * *'
 
 jobs:
 
