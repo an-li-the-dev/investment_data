@@ -11,6 +11,17 @@ jobs:
     needs: download-index-weight
     runs-on: ubuntu-latest
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Install dolt
         run: sudo bash -c 'curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | sudo bash'
       - name: Setup Dolt
@@ -25,21 +36,26 @@ jobs:
           restore-keys: dolt-storage
       - name: Clone the repository
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dolt clone kidylee/test .
+        run: dolt clone kidylee/investment_data .
       - name: Pull the repository
         if: steps.cache.outputs.cache-hit == 'true'
         run: dolt pull
 
-      - name: Download Index Weight
-        uses: actions/download-artifact@v4
-        with:
-          name: index_weight
-          path: index_weight
-      - run: |
-          file_list=($(ls index_weight/*))
-                      for file in "${file_list[@]}"; do
-                         cat "$file"
-                      done
+#      - name: Download Index Weight
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: index_weight
+#          path: index_weight
+#      - run: |
+#          file_list=($(ls index_weight/*))
+#          for file in "${file_list[@]}"; do
+#             dolt table import -u ts_index_weight "$file"
+#          done
+#      - name: Commit and push
+#        run: |
+#          dolt add .
+#          dolt commit -m "Update Index Weight"
+#          dolt push
       - name: Clean dolt folder before cache
         run: dolt gc
 
